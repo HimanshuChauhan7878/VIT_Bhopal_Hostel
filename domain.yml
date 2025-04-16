@@ -1,0 +1,19 @@
+version: "3.1"
+
+intents:
+  - greet
+  - goodbye
+  - inform
+
+responses:
+  utter_greet:
+    - text: "Hello! How can I assist you today?"
+
+  utter_goodbye:
+    - text: "Goodbye! Let me know if you need anything else."
+
+  utter_ask_for_details:
+    - text: "Could you please provide more details about your {item} issue?"
+
+actions:
+  - action_default_fallback
