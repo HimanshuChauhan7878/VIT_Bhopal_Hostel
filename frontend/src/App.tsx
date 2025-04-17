@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Building2, Users, ClipboardCheck, BedDouble, Info, GripVertical, UserPlus, Check, X, Bell, Search, AlertTriangle, User, Mail, Phone, MapPin, School, Calendar, Trophy } from 'lucide-react';
 import * as XLSX from "xlsx";
+import Chatbot from './Chatbot';
 
 interface UserProfile {
   name: string;
@@ -1179,6 +1180,7 @@ function App() {
       </footer>
 
       {renderProfileModal()}
+      <Chatbot />
     </div>
   );
 }
