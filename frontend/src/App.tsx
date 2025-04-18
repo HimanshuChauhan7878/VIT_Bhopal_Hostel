@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Building2, Users, ClipboardCheck, BedDouble, Info, GripVertical, UserPlus, Check, X, Bell, Search, AlertTriangle, User, Mail, Phone, MapPin, School, Calendar, Trophy } from 'lucide-react';
 import * as XLSX from "xlsx";
 import Chatbot from './Chatbot';
+import AdminPanel from './AdminPanel';
 
 interface UserProfile {
   name: string;
@@ -74,6 +75,7 @@ interface Student {
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showAdmin, setShowAdmin] = useState(false);
   const [step, setStep] = useState(0);
   const [loginData, setLoginData] = useState({
     applicationNo: '',
@@ -214,7 +216,7 @@ function App() {
 
   const fetchUserProfile = async (registrationNumber: string) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/users/${registrationNumber}`);
+      const response = await fetch(`http://localhost:5001/api/users/${registrationNumber}`);
       
       if (!response.ok) {
         throw new Error('Failed to fetch user data');
@@ -259,7 +261,7 @@ function App() {
 
   const saveUserToMongoDB = async (userData: UserProfile) => {
     try {
-      const response = await fetch('http://localhost:5000/api/users', {
+      const response = await fetch('http://localhost:5001/api/users', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -397,7 +399,7 @@ function App() {
   // Add function to fetch groups
   const fetchUserGroups = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/groups/leader/${studentData.registrationNumber}`);
+      const response = await fetch(`http://localhost:5001/api/groups/leader/${studentData.registrationNumber}`);
       if (!response.ok) {
         if (response.status === 404) {
           setUserGroups([]);
@@ -430,7 +432,7 @@ function App() {
   const saveGroupData = async (groupData: GroupData) => {
     try {
       console.log('Sending group data to backend:', groupData);
-      const response = await fetch('http://localhost:5000/api/groups', {
+      const response = await fetch('http://localhost:5001/api/groups', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -783,404 +785,417 @@ function App() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {isLoggedIn && (
-        <nav className="bg-white shadow-lg sticky top-0 z-40">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between h-16">
-              <div className="flex items-center">
-                <Building2 className="h-8 w-8 text-slate-700" />
-                <h1 className="ml-2 text-xl font-bold text-gray-900">VIT Bhopal Hostel</h1>
-              </div>
-              <div className="flex items-center space-x-4">
-                <button
-                  onClick={handleProfileClick}
-                  className="flex items-center space-x-2 px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors"
-                >
-                  <User size={20} />
-                  <span>Profile</span>
-                </button>
-                <button
-                  onClick={() => setIsLoggedIn(false)}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                >
-                  Logout
-                </button>
-              </div>
-            </div>
-          </div>
-        </nav>
-      )}
-
-      <main className="flex-grow">
-        {renderWelcomeMessage()}
-        {renderFeatures()}
-        {renderWelcomeBanner()}
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {!isLoggedIn ? (
-            <div className="max-w-md mx-auto">
-              <div className="bg-white rounded-lg shadow-xl p-8">
-                <h2 className="text-2xl font-bold text-center text-gray-800 mb-8">Student Login</h2>
-                <form onSubmit={handleLogin} className="space-y-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Application Number</label>
-                    <input
-                      type="text"
-                      value={loginData.applicationNo}
-                      onChange={(e) => setLoginData({ ...loginData, applicationNo: e.target.value })}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                      required
-                    />
+    <div>
+      <button
+        onClick={() => setShowAdmin(prev => !prev)}
+        style={{ position: 'fixed', top: 24, right: 24, zIndex: 1000 }}
+        className="bg-red-600 text-white px-4 py-2 rounded shadow hover:bg-red-700"
+      >
+        {showAdmin ? 'Close Admin Panel' : 'Open Admin Panel'}
+      </button>
+      {showAdmin ? (
+        <AdminPanel />
+      ) : (
+        <div className="min-h-screen bg-gray-50 flex flex-col">
+          {isLoggedIn && (
+            <nav className="bg-white shadow-lg sticky top-0 z-40">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="flex justify-between h-16">
+                  <div className="flex items-center">
+                    <Building2 className="h-8 w-8 text-slate-700" />
+                    <h1 className="ml-2 text-xl font-bold text-gray-900">VIT Bhopal Hostel</h1>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Date of Birth</label>
-                    <input
-                      type="date"
-                      value={loginData.dob}
-                      onChange={(e) => setLoginData({ ...loginData, dob: e.target.value })}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                      required
-                    />
+                  <div className="flex items-center space-x-4">
+                    <button
+                      onClick={handleProfileClick}
+                      className="flex items-center space-x-2 px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors"
+                    >
+                      <User size={20} />
+                      <span>Profile</span>
+                    </button>
+                    <button
+                      onClick={() => setIsLoggedIn(false)}
+                      className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                    >
+                      Logout
+                    </button>
                   </div>
-                  {errorMessage && (
-                    <div className="text-red-600 text-sm">{errorMessage}</div>
-                  )}
-                  <button
-                    type="submit"
-                    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                  >
-                    Login
-                  </button>
-                </form>
+                </div>
               </div>
+            </nav>
+          )}
 
-              <div className="mt-8 bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Important Information</h3>
-                <ul className="space-y-4 text-sm text-gray-600">
-                  <li className="flex items-start">
-                    <Info className="h-5 w-5 text-indigo-500 mr-2 mt-0.5" />
-                    <span>Room allocation is based on your rank and preferences</span>
-                  </li>
-                  <li className="flex items-start">
-                    <Info className="h-5 w-5 text-indigo-500 mr-2 mt-0.5" />
-                    <span>You can select roommates with rank difference less than 500</span>
-                  </li>
-                  <li className="flex items-start">
-                    <Info className="h-5 w-5 text-indigo-500 mr-2 mt-0.5" />
-                    <span>Make sure to review all details before final submission</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-8">
-              {step === 1 && (
-                <div className="space-y-8">
-                  {/* Welcome Section */}
+          <main className="flex-grow">
+            {renderWelcomeMessage()}
+            {renderFeatures()}
+            {renderWelcomeBanner()}
+
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+              {!isLoggedIn ? (
+                <div className="max-w-md mx-auto">
                   <div className="bg-white rounded-lg shadow-xl p-8">
-                    <div className="max-w-3xl mx-auto text-center">
-                      <h2 className="text-3xl font-bold text-gray-900 mb-4">Welcome to Room Allocation Portal</h2>
-                      <p className="text-lg text-gray-600 mb-6">
-                        As the group leader, you can create your room allocation request by following these simple steps:
-                      </p>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="p-4 bg-slate-50 rounded-lg">
-                          <UserPlus className="h-8 w-8 text-indigo-600 mx-auto mb-2" />
-                          <h3 className="font-semibold text-gray-900 mb-2">1. Add Members</h3>
-                          <p className="text-sm text-gray-600">Select your preferred roommates based on rank compatibility</p>
-                        </div>
-                        <div className="p-4 bg-slate-50 rounded-lg">
-                          <BedDouble className="h-8 w-8 text-indigo-600 mx-auto mb-2" />
-                          <h3 className="font-semibold text-gray-900 mb-2">2. Choose Rooms</h3>
-                          <p className="text-sm text-gray-600">Arrange your room preferences in order of priority</p>
-                        </div>
-                        <div className="p-4 bg-slate-50 rounded-lg">
-                          <ClipboardCheck className="h-8 w-8 text-indigo-600 mx-auto mb-2" />
-                          <h3 className="font-semibold text-gray-900 mb-2">3. Submit Request</h3>
-                          <p className="text-sm text-gray-600">Review and confirm your allocation request</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Member Selection Section */}
-                  <div className="bg-white rounded-lg shadow-xl p-8">
-                    <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-2xl font-bold text-center text-gray-800 mb-8">Student Login</h2>
+                    <form onSubmit={handleLogin} className="space-y-6">
                       <div>
-                        <h2 className="text-2xl font-bold text-gray-800">Room Allocation Request</h2>
-                        <p className="text-gray-600 mt-1">You are creating this request as the group leader</p>
-                      </div>
-                      <div className="bg-indigo-50 px-4 py-2 rounded-lg">
-                        <p className="text-sm text-indigo-700">Your Rank: {studentData.rank}</p>
-                      </div>
-                    </div>
-
-                    <div className="bg-slate-50 p-4 rounded-lg mb-6">
-                      <div className="flex items-start space-x-3">
-                        <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5" />
-                        <div>
-                          <h3 className="font-medium text-gray-900">Important Notes:</h3>
-                          <ul className="mt-2 text-sm text-gray-600 list-disc list-inside space-y-1">
-                            <li>You can only add members with a rank difference of 500 or less</li>
-                            <li>All members will be notified of their inclusion in the group</li>
-                            <li>Room preferences can be modified until final submission</li>
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="relative" ref={searchRef}>
-                      <div className="flex items-center space-x-2">
-                        <Search className="text-gray-400" size={20} />
+                        <label className="block text-sm font-medium text-gray-700">Application Number</label>
                         <input
                           type="text"
-                          placeholder="Search members by name or registration number..."
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          className="flex-1 rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
+                          value={loginData.applicationNo}
+                          onChange={(e) => setLoginData({ ...loginData, applicationNo: e.target.value })}
+                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                          required
                         />
                       </div>
-                      {showDropdown && filteredStudents.length > 0 && (
-                        <div className="absolute z-10 w-full mt-1 bg-white rounded-md shadow-lg max-h-60 overflow-auto">
-                          {filteredStudents.map((student) => {
-                            if (student.registrationNumber === studentData.registrationNumber) {
-                              return null;
-                            }
-                            
-                            const rankDifference = Math.abs(student.rank - studentData.rank);
-                            const canAdd = rankDifference <= 500;
-                            
-                            return (
-                              <div
-                                key={student.id}
-                                onClick={() => canAdd && handleSelectStudent(student)}
-                                className={`px-4 py-2 hover:bg-gray-100 cursor-pointer ${
-                                  !canAdd ? 'opacity-50 cursor-not-allowed' : ''
-                                }`}
-                              >
-                                <div className="font-medium">{student.name}</div>
-                                <div className="text-sm text-gray-500">
-                                  {student.registrationNumber} | Rank: {student.rank}
-                                </div>
-                                {!canAdd && (
-                                  <div className="text-sm text-red-500 mt-1">
-                                    Rank difference ({rankDifference}) exceeds 500. Cannot be added to group.
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Date of Birth</label>
+                        <input
+                          type="date"
+                          value={loginData.dob}
+                          onChange={(e) => setLoginData({ ...loginData, dob: e.target.value })}
+                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                          required
+                        />
+                      </div>
+                      {errorMessage && (
+                        <div className="text-red-600 text-sm">{errorMessage}</div>
+                      )}
+                      <button
+                        type="submit"
+                        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                      >
+                        Login
+                      </button>
+                    </form>
+                  </div>
+
+                  <div className="mt-8 bg-white rounded-lg shadow-md p-6">
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">Important Information</h3>
+                    <ul className="space-y-4 text-sm text-gray-600">
+                      <li className="flex items-start">
+                        <Info className="h-5 w-5 text-indigo-500 mr-2 mt-0.5" />
+                        <span>Room allocation is based on your rank and preferences</span>
+                      </li>
+                      <li className="flex items-start">
+                        <Info className="h-5 w-5 text-indigo-500 mr-2 mt-0.5" />
+                        <span>You can select roommates with rank difference less than 500</span>
+                      </li>
+                      <li className="flex items-start">
+                        <Info className="h-5 w-5 text-indigo-500 mr-2 mt-0.5" />
+                        <span>Make sure to review all details before final submission</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-8">
+                  {step === 1 && (
+                    <div className="space-y-8">
+                      {/* Welcome Section */}
+                      <div className="bg-white rounded-lg shadow-xl p-8">
+                        <div className="max-w-3xl mx-auto text-center">
+                          <h2 className="text-3xl font-bold text-gray-900 mb-4">Welcome to Room Allocation Portal</h2>
+                          <p className="text-lg text-gray-600 mb-6">
+                            As the group leader, you can create your room allocation request by following these simple steps:
+                          </p>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="p-4 bg-slate-50 rounded-lg">
+                              <UserPlus className="h-8 w-8 text-indigo-600 mx-auto mb-2" />
+                              <h3 className="font-semibold text-gray-900 mb-2">1. Add Members</h3>
+                              <p className="text-sm text-gray-600">Select your preferred roommates based on rank compatibility</p>
+                            </div>
+                            <div className="p-4 bg-slate-50 rounded-lg">
+                              <BedDouble className="h-8 w-8 text-indigo-600 mx-auto mb-2" />
+                              <h3 className="font-semibold text-gray-900 mb-2">2. Choose Rooms</h3>
+                              <p className="text-sm text-gray-600">Arrange your room preferences in order of priority</p>
+                            </div>
+                            <div className="p-4 bg-slate-50 rounded-lg">
+                              <ClipboardCheck className="h-8 w-8 text-indigo-600 mx-auto mb-2" />
+                              <h3 className="font-semibold text-gray-900 mb-2">3. Submit Request</h3>
+                              <p className="text-sm text-gray-600">Review and confirm your allocation request</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Member Selection Section */}
+                      <div className="bg-white rounded-lg shadow-xl p-8">
+                        <div className="flex items-center justify-between mb-6">
+                          <div>
+                            <h2 className="text-2xl font-bold text-gray-800">Room Allocation Request</h2>
+                            <p className="text-gray-600 mt-1">You are creating this request as the group leader</p>
+                          </div>
+                          <div className="bg-indigo-50 px-4 py-2 rounded-lg">
+                            <p className="text-sm text-indigo-700">Your Rank: {studentData.rank}</p>
+                          </div>
+                        </div>
+
+                        <div className="bg-slate-50 p-4 rounded-lg mb-6">
+                          <div className="flex items-start space-x-3">
+                            <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5" />
+                            <div>
+                              <h3 className="font-medium text-gray-900">Important Notes:</h3>
+                              <ul className="mt-2 text-sm text-gray-600 list-disc list-inside space-y-1">
+                                <li>You can only add members with a rank difference of 500 or less</li>
+                                <li>All members will be notified of their inclusion in the group</li>
+                                <li>Room preferences can be modified until final submission</li>
+                              </ul>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="relative" ref={searchRef}>
+                          <div className="flex items-center space-x-2">
+                            <Search className="text-gray-400" size={20} />
+                            <input
+                              type="text"
+                              placeholder="Search members by name or registration number..."
+                              value={searchQuery}
+                              onChange={(e) => setSearchQuery(e.target.value)}
+                              className="flex-1 rounded-lg border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
+                            />
+                          </div>
+                          {showDropdown && filteredStudents.length > 0 && (
+                            <div className="absolute z-10 w-full mt-1 bg-white rounded-md shadow-lg max-h-60 overflow-auto">
+                              {filteredStudents.map((student) => {
+                                if (student.registrationNumber === studentData.registrationNumber) {
+                                  return null;
+                                }
+                                
+                                const rankDifference = Math.abs(student.rank - studentData.rank);
+                                const canAdd = rankDifference <= 500;
+                                
+                                return (
+                                  <div
+                                    key={student.id}
+                                    onClick={() => canAdd && handleSelectStudent(student)}
+                                    className={`px-4 py-2 hover:bg-gray-100 cursor-pointer ${
+                                      !canAdd ? 'opacity-50 cursor-not-allowed' : ''
+                                    }`}
+                                  >
+                                    <div className="font-medium">{student.name}</div>
+                                    <div className="text-sm text-gray-500">
+                                      {student.registrationNumber} | Rank: {student.rank}
+                                    </div>
+                                    {!canAdd && (
+                                      <div className="text-sm text-red-500 mt-1">
+                                        Rank difference ({rankDifference}) exceeds 500. Cannot be added to group.
+                                      </div>
+                                    )}
                                   </div>
-                                )}
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+
+                        {renderSelectedRoommates()}
+
+                        <div className="mt-8 flex justify-end">
+                          <button
+                            onClick={() => setStep(2)}
+                            className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                          >
+                            Next: Choose Rooms
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {step === 2 && (
+                    <div className="bg-white rounded-lg shadow-xl p-8">
+                      <h2 className="text-2xl font-bold text-gray-800 mb-6">Room Preferences</h2>
+                      <div className="space-y-4">
+                        {roomPreferences.map((room, index) => (
+                          <div
+                            key={room.id}
+                            draggable
+                            onDragStart={(e) => handleDragStart(e, index)}
+                            onDrop={(e) => handleDrop(e, index)}
+                            onDragOver={handleDragOver}
+                            className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg cursor-move"
+                          >
+                            <GripVertical className="text-gray-400" size={20} />
+                            <div className="flex-1">
+                              <div className="font-medium">{room.type}</div>
+                              <div className="text-sm text-gray-500">
+                                {room.block} Block • Capacity: {room.capacity} • {room.price}
                               </div>
-                            );
-                          })}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="mt-8 flex justify-between">
+                        <button
+                          onClick={() => setStep(1)}
+                          className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                        >
+                          Back
+                        </button>
+                        <button
+                          onClick={() => setStep(3)}
+                          className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                        >
+                          Next
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {step === 3 && renderConfirmation()}
+
+                  {step === 4 && (
+                    <div className="bg-white rounded-lg shadow-xl p-8">
+                      {!showGroups ? (
+                        <div className="text-center">
+                          <Check className="mx-auto text-green-500" size={64} />
+                          <h2 className="text-2xl font-bold text-gray-800 mt-4">Submission Successful!</h2>
+                          <p className="text-gray-600 mt-2">Your hostel preferences have been submitted successfully.</p>
+                          <div className="mt-8 space-y-4">
+                            <button
+                              onClick={async () => {
+                                try {
+                                  await fetchUserGroups();
+                                  setShowGroups(true);
+                                } catch (error) {
+                                  console.error("Error fetching groups:", error);
+                                  setErrorMessage("Failed to fetch groups. Please try again.");
+                                }
+                              }}
+                              className="w-full px-6 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors"
+                            >
+                              View Created Groups
+                            </button>
+                            <button
+                              onClick={handleReturnHome}
+                              className="w-full px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                            >
+                              Return to Home
+                            </button>
+                            <button
+                              onClick={() => {
+                                setIsLoggedIn(false);
+                                setStep(0);
+                              }}
+                              className="w-full px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                            >
+                              Logout
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div>
+                          <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-2xl font-bold text-gray-800">Your Groups</h2>
+                            <button
+                              onClick={() => setShowGroups(false)}
+                              className="text-gray-500 hover:text-gray-700"
+                            >
+                              <X size={24} />
+                            </button>
+                          </div>
+                          
+                          <div className="space-y-6">
+                            {userGroups && userGroups.length > 0 ? (
+                              userGroups.map((group, index) => (
+                                <div key={index}>
+                                  {renderGroupView(group)}
+                                </div>
+                              ))
+                            ) : (
+                              <div className="text-center py-8">
+                                <p className="text-gray-500">No groups found. Please create a group first.</p>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="flex justify-between mt-6">
+                            <button
+                              onClick={handleReturnHome}
+                              className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                            >
+                              Return to Home
+                            </button>
+                            <button
+                              onClick={() => {
+                                setIsLoggedIn(false);
+                                setStep(0);
+                              }}
+                              className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                            >
+                              Logout
+                            </button>
+                          </div>
                         </div>
                       )}
                     </div>
-
-                    {renderSelectedRoommates()}
-
-                    <div className="mt-8 flex justify-end">
-                      <button
-                        onClick={() => setStep(2)}
-                        className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-                      >
-                        Next: Choose Rooms
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {step === 2 && (
-                <div className="bg-white rounded-lg shadow-xl p-8">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-6">Room Preferences</h2>
-                  <div className="space-y-4">
-                    {roomPreferences.map((room, index) => (
-                      <div
-                        key={room.id}
-                        draggable
-                        onDragStart={(e) => handleDragStart(e, index)}
-                        onDrop={(e) => handleDrop(e, index)}
-                        onDragOver={handleDragOver}
-                        className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg cursor-move"
-                      >
-                        <GripVertical className="text-gray-400" size={20} />
-                        <div className="flex-1">
-                          <div className="font-medium">{room.type}</div>
-                          <div className="text-sm text-gray-500">
-                            {room.block} Block • Capacity: {room.capacity} • {room.price}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="mt-8 flex justify-between">
-                    <button
-                      onClick={() => setStep(1)}
-                      className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-                    >
-                      Back
-                    </button>
-                    <button
-                      onClick={() => setStep(3)}
-                      className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-                    >
-                      Next
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {step === 3 && renderConfirmation()}
-
-              {step === 4 && (
-                <div className="bg-white rounded-lg shadow-xl p-8">
-                  {!showGroups ? (
-                    <div className="text-center">
-                      <Check className="mx-auto text-green-500" size={64} />
-                      <h2 className="text-2xl font-bold text-gray-800 mt-4">Submission Successful!</h2>
-                      <p className="text-gray-600 mt-2">Your hostel preferences have been submitted successfully.</p>
-                      <div className="mt-8 space-y-4">
-                        <button
-                          onClick={async () => {
-                            try {
-                              await fetchUserGroups();
-                              setShowGroups(true);
-                            } catch (error) {
-                              console.error("Error fetching groups:", error);
-                              setErrorMessage("Failed to fetch groups. Please try again.");
-                            }
-                          }}
-                          className="w-full px-6 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition-colors"
-                        >
-                          View Created Groups
-                        </button>
-                        <button
-                          onClick={handleReturnHome}
-                          className="w-full px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-                        >
-                          Return to Home
-                        </button>
-                        <button
-                          onClick={() => {
-                            setIsLoggedIn(false);
-                            setStep(0);
-                          }}
-                          className="w-full px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                        >
-                          Logout
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div>
-                      <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-2xl font-bold text-gray-800">Your Groups</h2>
-                        <button
-                          onClick={() => setShowGroups(false)}
-                          className="text-gray-500 hover:text-gray-700"
-                        >
-                          <X size={24} />
-                        </button>
-                      </div>
-                      
-                      <div className="space-y-6">
-                        {userGroups && userGroups.length > 0 ? (
-                          userGroups.map((group, index) => (
-                            <div key={index}>
-                              {renderGroupView(group)}
-                            </div>
-                          ))
-                        ) : (
-                          <div className="text-center py-8">
-                            <p className="text-gray-500">No groups found. Please create a group first.</p>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="flex justify-between mt-6">
-                        <button
-                          onClick={handleReturnHome}
-                          className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-                        >
-                          Return to Home
-                        </button>
-                        <button
-                          onClick={() => {
-                            setIsLoggedIn(false);
-                            setStep(0);
-                          }}
-                          className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                        >
-                          Logout
-                        </button>
-                      </div>
-                    </div>
                   )}
                 </div>
               )}
             </div>
-          )}
-        </div>
-      </main>
+          </main>
 
-      <footer className="bg-white border-t">
-        <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="col-span-2">
-              <div className="flex items-center">
-                <Building2 className="h-8 w-8 text-slate-700" />
-                <h2 className="ml-2 text-xl font-bold text-gray-900">VIT Bhopal University</h2>
+          <footer className="bg-white border-t">
+            <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div className="col-span-2">
+                  <div className="flex items-center">
+                    <Building2 className="h-8 w-8 text-slate-700" />
+                    <h2 className="ml-2 text-xl font-bold text-gray-900">VIT Bhopal University</h2>
+                  </div>
+                  <p className="mt-4 text-base text-gray-500">
+                    Providing quality education and comfortable accommodation for students since 2017.
+                  </p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-400 tracking-wider uppercase">Quick Links</h3>
+                  <ul className="mt-4 space-y-4">
+                    <li>
+                      <a href="#" className="text-base text-gray-500 hover:text-gray-900">About Us</a>
+                    </li>
+                    <li>
+                      <a href="#" className="text-base text-gray-500 hover:text-gray-900">Contact</a>
+                    </li>
+                    <li>
+                      <a href="#" className="text-base text-gray-500 hover:text-gray-900">FAQs</a>
+                    </li>
+                  </ul>
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-400 tracking-wider uppercase">Contact Info</h3>
+                  <ul className="mt-4 space-y-4">
+                    <li className="flex items-center">
+                      <MapPin className="h-5 w-5 text-gray-400 mr-2" />
+                      <span className="text-gray-500">Bhopal-Indore Highway, Kothrikalan, Madhya Pradesh</span>
+                    </li>
+                    <li className="flex items-center">
+                      <Mail className="h-5 w-5 text-gray-400 mr-2" />
+                      <a href="mailto:info@vitbhopal.ac.in" className="text-gray-500 hover:text-gray-900">
+                        info@vitbhopal.ac.in
+                      </a>
+                    </li>
+                    <li className="flex items-center">
+                      <Phone className="h-5 w-5 text-gray-400 mr-2" />
+                      <a href="tel:+917552024236" className="text-gray-500 hover:text-gray-900">
+                        +91 755 202 4236
+                      </a>
+                    </li>
+                  </ul>
+                </div>
               </div>
-              <p className="mt-4 text-base text-gray-500">
-                Providing quality education and comfortable accommodation for students since 2017.
-              </p>
+              <div className="mt-8 border-t border-gray-200 pt-8">
+                <p className="text-base text-gray-400 text-center">
+                  &copy; {new Date().getFullYear()} VIT Bhopal University. All rights reserved.
+                </p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-sm font-semibold text-gray-400 tracking-wider uppercase">Quick Links</h3>
-              <ul className="mt-4 space-y-4">
-                <li>
-                  <a href="#" className="text-base text-gray-500 hover:text-gray-900">About Us</a>
-                </li>
-                <li>
-                  <a href="#" className="text-base text-gray-500 hover:text-gray-900">Contact</a>
-                </li>
-                <li>
-                  <a href="#" className="text-base text-gray-500 hover:text-gray-900">FAQs</a>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-gray-400 tracking-wider uppercase">Contact Info</h3>
-              <ul className="mt-4 space-y-4">
-                <li className="flex items-center">
-                  <MapPin className="h-5 w-5 text-gray-400 mr-2" />
-                  <span className="text-gray-500">Bhopal-Indore Highway, Kothrikalan, Madhya Pradesh</span>
-                </li>
-                <li className="flex items-center">
-                  <Mail className="h-5 w-5 text-gray-400 mr-2" />
-                  <a href="mailto:info@vitbhopal.ac.in" className="text-gray-500 hover:text-gray-900">
-                    info@vitbhopal.ac.in
-                  </a>
-                </li>
-                <li className="flex items-center">
-                  <Phone className="h-5 w-5 text-gray-400 mr-2" />
-                  <a href="tel:+917552024236" className="text-gray-500 hover:text-gray-900">
-                    +91 755 202 4236
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className="mt-8 border-t border-gray-200 pt-8">
-            <p className="text-base text-gray-400 text-center">
-              © {new Date().getFullYear()} VIT Bhopal University. All rights reserved.
-            </p>
-          </div>
-        </div>
-      </footer>
+          </footer>
 
-      {renderProfileModal()}
-      <Chatbot />
+          {renderProfileModal()}
+          <Chatbot />
+        </div>
+      )}
     </div>
   );
 }
