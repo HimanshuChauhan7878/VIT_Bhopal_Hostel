@@ -38,6 +38,10 @@ const Chatbot: React.FC = () => {
     'hostel fee': 'The hostel fees depend on the type of room and facilities. Please visit the official VIT Bhopal website for the latest fee structure.',
     'room type': 'Different types of rooms are available: single, double, triple, and quadruple sharing. AC and non-AC options are offered.',
     'bed type': 'Rooms are equipped with standard single beds and mattresses. The type of bed may vary depending on the room category.',
+    // FAQ for missing choice filling
+    'what if i miss choice filling': 'If you miss the choice filling deadline, you will get one more chance, but only the leftover rooms will be available for selection.',
+    'missed choice filling': 'If you missed the choice filling, you will be given another opportunity, but only leftover rooms will be available.',
+    'forgot to fill choices': 'If you forgot to fill your choices, you will get another chance, but only leftover rooms will be left for you to choose from.',
   };
 
   function getFaqAnswer(userInput: string): string {
