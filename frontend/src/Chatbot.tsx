@@ -42,14 +42,42 @@ const Chatbot: React.FC = () => {
     'what if i miss choice filling': 'If you miss the choice filling deadline, you will get one more chance, but only the leftover rooms will be available for selection.',
     'missed choice filling': 'If you missed the choice filling, you will be given another opportunity, but only leftover rooms will be available.',
     'forgot to fill choices': 'If you forgot to fill your choices, you will get another chance, but only leftover rooms will be left for you to choose from.',
+    // Parents allowed FAQ
+    'are parents allowed inside the hostel': "No, parents or guardians are not allowed inside the hostel.",
+    'can parents enter hostel': "No, parents or guardians are not allowed inside the hostel.",
+    'parents allowed hostel': "No, parents or guardians are not allowed inside the hostel.",
+    'can my parents come to hostel': "No, parents or guardians are not allowed inside the hostel.",
+    'parents entry hostel': "No, parents or guardians are not allowed inside the hostel.",
+    'can parents visit hostel': "No, parents or guardians are not allowed inside the hostel.",
+    'can parents go inside hostel': "No, parents or guardians are not allowed inside the hostel.",
+    'can my parents visit me in hostel': "No, parents or guardians are not allowed inside the hostel.",
+    // Rank difference for same room FAQ
+    'what should be the rank difference to get same room': '500',
+    'rank difference for same room': '500',
+    'rank gap for same room': '500',
+    'difference in rank for same room': '500',
+    'same room rank difference': '500',
+    // Ragging FAQs
+    'ragging': 'No, ragging is strictly prohibited inside the hostel and university premises.',
+    'is ragging allowed': 'No, ragging is strictly prohibited inside the hostel and university premises.',
+    'ragging allowed': 'No, ragging is strictly prohibited inside the hostel and university premises.'
   };
 
   function getFaqAnswer(userInput: string): string {
     const normalized = userInput.toLowerCase().replace(/[^a-z0-9 ]/g, '').trim();
+
+    // Greeting detection
+    const greetings = [
+      'hi', 'hello', 'hey', 'good morning', 'good evening', 'good afternoon', 'good night', 'greetings', 'namaste', 'hola', 'yo', 'sup'
+    ];
+    if (greetings.some(greet => normalized === greet || normalized.startsWith(greet))) {
+      return 'Hello! How can I help you today?';
+    }
+
+    // Use FAQ knowledge base for close matches
     const questions = Object.keys(faq);
-    // Use string-similarity to find best match
     const { bestMatch } = stringSimilarity.findBestMatch(normalized, questions);
-    if (bestMatch.rating > 0.2) {
+    if (bestMatch.rating > 0.5) {
       return faq[bestMatch.target];
     }
     return "Sorry, I don't know the answer to that. Please contact the hostel office for more information.";

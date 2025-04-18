@@ -488,8 +488,14 @@ function App() {
     if (isLoggedIn) return null;
 
     return (
-      <div className="bg-gradient-to-r from-slate-800 to-slate-700 text-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="relative bg-gradient-to-r from-slate-800 to-slate-700 text-white py-16 overflow-hidden">
+        {/* Background Logo Image */}
+        <img 
+          src="/sdasd.jpg" 
+          alt="VIT Bhopal Background" 
+          className="absolute inset-0 w-full h-full object-cover opacity-10 pointer-events-none select-none z-0"
+        />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center">
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
               Welcome to VIT Bhopal Hostel Management
