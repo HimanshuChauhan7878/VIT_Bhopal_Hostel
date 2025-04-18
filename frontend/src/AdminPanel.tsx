@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import * as XLSX from "xlsx";
 
 // Fixed list of room types from App.tsx
 const ROOM_TYPES = [
@@ -74,6 +75,24 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
     }
   };
 
+  const handleDownloadExcel = () => {
+    if (allotment.length === 0) return;
+    const wsData = [
+      ["Group ID", "Leader Reg. No", "Avg. Rank", "Allotted Room", "Members"],
+      ...allotment.map(row => [
+        row.groupId,
+        row.leaderRegNo,
+        row.avgRank,
+        row.allottedRoom || 'None',
+        row.memberRegNos.join(', ')
+      ])
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Allotment");
+    XLSX.writeFile(wb, "RoomAllotment.xlsx");
+  };
+
   return (
     <div className="relative max-w-2xl mx-auto p-8 bg-white rounded-lg shadow-lg mt-10">
       <h2 className="text-2xl font-bold mb-6">Admin Room Allotment Panel</h2>
@@ -142,6 +161,12 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
               ))}
             </tbody>
           </table>
+          <button
+            onClick={handleDownloadExcel}
+            className="mt-4 bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 transition"
+          >
+            Download as Excel
+          </button>
         </div>
       )}
       <div className="flex justify-start mt-8">
