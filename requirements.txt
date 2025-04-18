@@ -1,6 +1,0 @@
-rasa==3.6.15
-rasa-sdk==3.6.1
-spacy==3.7.4
-python-dateutil==2.8.2
-ujson==5.9.0
-python-crfsuite==0.9.9
