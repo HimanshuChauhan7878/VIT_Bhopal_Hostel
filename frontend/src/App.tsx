@@ -61,6 +61,7 @@ interface GroupData {
   }[];
   submissionDate: string;
   status: 'pending' | 'approved' | 'rejected';
+  _id: string; // Add _id property
 }
 
 interface Student {
@@ -337,39 +338,50 @@ function App() {
     e.preventDefault();
   };
 
+  // Prevent selecting a student who is already in any group
   const handleSelectStudent = (student: Student) => {
     // Check if student is already selected
     const exists = selectedFriends.some(friend => friend.registrationNumber === student.registrationNumber);
-    
     if (exists) {
       setErrorMessage("This student is already in your selection.");
       setTimeout(() => setErrorMessage(null), 3000);
       return;
     }
-    
-    // Check rank difference
-    const rankDifference = Math.abs(student.rank - studentData.rank);
-    if (rankDifference > 500) {
-      setErrorMessage(`Cannot select this student. Rank difference (${rankDifference}) exceeds 500.`);
-      setTimeout(() => setErrorMessage(null), 3000);
-      return;
-    }
-    
-    // Add to selected friends
-    setSelectedFriends([
-      ...selectedFriends,
-      {
-        id: student.id,
-        name: student.name,
-        registrationNumber: student.registrationNumber,
-        rank: student.rank,
-        status: 'pending'
-      }
-    ]);
-    
-    // Clear search after selection
-    setSearchQuery('');
-    setShowDropdown(false);
+
+    // Check if student is already in any group (backend check)
+    fetch(`http://localhost:5001/api/groups/member/${student.registrationNumber}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.groupExists) {
+          setErrorMessage("This student is already part of another group and cannot be added.");
+          setTimeout(() => setErrorMessage(null), 3000);
+        } else {
+          // Check rank difference
+          const rankDifference = Math.abs(student.rank - studentData.rank);
+          if (rankDifference > 500) {
+            setErrorMessage(`Cannot select this student. Rank difference (${rankDifference}) exceeds 500.`);
+            setTimeout(() => setErrorMessage(null), 3000);
+            return;
+          }
+          // Add to selected friends
+          setSelectedFriends([
+            ...selectedFriends,
+            {
+              id: student.id,
+              name: student.name,
+              registrationNumber: student.registrationNumber,
+              rank: student.rank,
+              status: 'pending'
+            }
+          ]);
+          setSearchQuery('');
+          setShowDropdown(false);
+        }
+      })
+      .catch(() => {
+        setErrorMessage("Failed to check if student is in another group. Please try again.");
+        setTimeout(() => setErrorMessage(null), 3000);
+      });
   };
 
   const handleRoommateRequest = (friendId: string) => {
@@ -416,6 +428,14 @@ function App() {
     }
   };
 
+  // Fetch group info on login and keep it updated
+  useEffect(() => {
+    if (isLoggedIn && studentData.registrationNumber) {
+      fetchUserGroups();
+    }
+    // eslint-disable-next-line
+  }, [isLoggedIn, studentData.registrationNumber]);
+
   // Modify handleViewGroups to fetch groups
   const handleViewGroups = async () => {
     setShowGroups(true);
@@ -453,6 +473,15 @@ function App() {
       console.error("Error saving group data:", error);
       setErrorMessage("Failed to save group data. Please try again.");
     }
+  };
+
+  // Prevent group creation and editing if userGroups.length > 0
+  const handleCreateGroup = () => {
+    if (userGroups.length > 0) {
+      setErrorMessage("You already have a group. You can only view your existing group.");
+      return;
+    }
+    setStep(2);
   };
 
   const renderWelcomeMessage = () => {
@@ -784,17 +813,34 @@ function App() {
     </div>
   );
 
+  const renderDashboard = () => (
+    <div>
+      {userGroups.length > 0 ? (
+        <div className="mb-8">
+          <h2 className="text-xl font-bold mb-2">Your Group Details</h2>
+          {renderGroupView(userGroups[0])}
+        </div>
+      ) : (
+        <p className="text-gray-500 mb-4">You have not created a group yet.</p>
+      )}
+      {/* ...other dashboard content... */}
+    </div>
+  );
+
   return (
     <div>
-      <button
-        onClick={() => setShowAdmin(prev => !prev)}
-        style={{ position: 'fixed', top: 24, right: 24, zIndex: 1000 }}
-        className="bg-red-600 text-white px-4 py-2 rounded shadow hover:bg-red-700"
-      >
-        {showAdmin ? 'Close Admin Panel' : 'Open Admin Panel'}
-      </button>
+      {/* Admin Portal Button (Bottom Left) */}
+      <div style={{ position: 'fixed', bottom: 24, left: 24, zIndex: 50 }}>
+        <button
+          onClick={() => setShowAdmin(true)}
+          className="bg-slate-900 text-white px-4 py-2 rounded-lg shadow-lg hover:bg-slate-700 transition-colors"
+        >
+          Admin Portal
+        </button>
+      </div>
+
       {showAdmin ? (
-        <AdminPanel />
+        <AdminPanel onBack={() => setShowAdmin(false)} />
       ) : (
         <div className="min-h-screen bg-gray-50 flex flex-col">
           {isLoggedIn && (
@@ -888,6 +934,7 @@ function App() {
                 </div>
               ) : (
                 <div className="space-y-8">
+                  {step === 1 && renderDashboard()}
                   {step === 1 && (
                     <div className="space-y-8">
                       {/* Welcome Section */}
@@ -919,7 +966,7 @@ function App() {
 
                       {/* Member Selection Section */}
                       <div className="bg-white rounded-lg shadow-xl p-8">
-                        <div className="flex items-center justify-between mb-6">
+                        <div className="flex justify-between items-start mb-6">
                           <div>
                             <h2 className="text-2xl font-bold text-gray-800">Room Allocation Request</h2>
                             <p className="text-gray-600 mt-1">You are creating this request as the group leader</p>
@@ -992,7 +1039,7 @@ function App() {
 
                         <div className="mt-8 flex justify-end">
                           <button
-                            onClick={() => setStep(2)}
+                            onClick={handleCreateGroup}
                             className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
                           >
                             Next: Choose Rooms

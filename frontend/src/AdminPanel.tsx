@@ -35,7 +35,11 @@ interface AllotmentResult {
   memberRegNos: string[];
 }
 
-const AdminPanel: React.FC = () => {
+interface AdminPanelProps {
+  onBack: () => void;
+}
+
+const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
   const [availability, setAvailability] = useState<RoomAvailability>(
     Object.fromEntries(ROOM_TYPES.map((type) => [type, 0]))
   );
@@ -71,7 +75,7 @@ const AdminPanel: React.FC = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-8 bg-white rounded-lg shadow-lg mt-10">
+    <div className="relative max-w-2xl mx-auto p-8 bg-white rounded-lg shadow-lg mt-10">
       <h2 className="text-2xl font-bold mb-6">Admin Room Allotment Panel</h2>
       {error && <p className="text-red-500">{error}</p>}
       {success && <p className="text-green-600">{success}</p>}
@@ -140,6 +144,14 @@ const AdminPanel: React.FC = () => {
           </table>
         </div>
       )}
+      <div className="flex justify-start mt-8">
+        <button
+          onClick={onBack}
+          className="px-4 py-2 bg-slate-200 text-slate-800 rounded hover:bg-slate-300 shadow"
+        >
+          ← Back
+        </button>
+      </div>
     </div>
   );
 };

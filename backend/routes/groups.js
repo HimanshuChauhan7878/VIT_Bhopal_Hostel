@@ -112,6 +112,7 @@ router.post('/allotment', async (req, res) => {
     // Clone availability to mutate
     const roomCounts = { ...availability };
     const allotment = [];
+    const allottedGroups = new Set();
 
     // Allot rooms
     for (const { group, avgRank } of groupWithAvg) {
@@ -125,13 +126,17 @@ router.post('/allotment', async (req, res) => {
           }
         }
       }
-      allotment.push({
-        groupId: group._id,
-        leaderRegNo: group.leader.registrationNumber,
-        avgRank: Math.round(avgRank * 100) / 100,
-        allottedRoom: allottedRoom,
-        memberRegNos: group.members.map(m => m.registrationNumber),
-      });
+      if (allottedRoom) {
+        allotment.push({
+          groupId: group._id,
+          leaderRegNo: group.leader.registrationNumber,
+          avgRank: Math.round(avgRank * 100) / 100,
+          allottedRoom: allottedRoom,
+          memberRegNos: group.members.map(m => m.registrationNumber),
+        });
+        allottedGroups.add(group._id.toString());
+      }
+      // If no room available, do not allot (skip group)
     }
 
     res.json({ allotment });
