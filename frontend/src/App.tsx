@@ -217,7 +217,7 @@ function App() {
 
   const fetchUserProfile = async (registrationNumber: string) => {
     try {
-      const response = await fetch(`http://localhost:5001/api/users/${registrationNumber}`);
+      const response = await fetch(`http://localhost:5000/api/users/${registrationNumber}`);
       
       if (!response.ok) {
         throw new Error('Failed to fetch user data');
@@ -262,7 +262,7 @@ function App() {
 
   const saveUserToMongoDB = async (userData: UserProfile) => {
     try {
-      const response = await fetch('http://localhost:5001/api/users', {
+      const response = await fetch('http://localhost:5000/api/users', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -349,7 +349,7 @@ function App() {
     }
 
     // Check if student is already in any group (backend check)
-    fetch(`http://localhost:5001/api/groups/member/${student.registrationNumber}`)
+    fetch(`http://localhost:5000/api/groups/member/${student.registrationNumber}`)
       .then(res => res.json())
       .then(data => {
         if (data && data.groupExists) {
@@ -411,7 +411,7 @@ function App() {
   // Add function to fetch groups
   const fetchUserGroups = async () => {
     try {
-      const response = await fetch(`http://localhost:5001/api/groups/leader/${studentData.registrationNumber}`);
+      const response = await fetch(`http://localhost:5000/api/groups/leader/${studentData.registrationNumber}`);
       if (!response.ok) {
         if (response.status === 404) {
           setUserGroups([]);
@@ -452,7 +452,7 @@ function App() {
   const saveGroupData = async (groupData: GroupData) => {
     try {
       console.log('Sending group data to backend:', groupData);
-      const response = await fetch('http://localhost:5001/api/groups', {
+      const response = await fetch('http://localhost:5000/api/groups', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
